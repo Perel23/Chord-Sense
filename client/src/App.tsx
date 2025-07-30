@@ -27,7 +27,6 @@ function App() {
       {mode === 'practice' && (
         <PracticeMode
           showSettings={practiceShowSettings}
-          onShowSettings={() => setPracticeShowSettings(true)}
           selectedKey={practiceSelectedKey}
           onKeyChange={setPracticeSelectedKey}
           selectedInversions={practiceSelectedInversions}
@@ -41,7 +40,6 @@ function App() {
       {mode === 'explore' && (
         <ExploreMode
           showSettings={exploreShowSettings}
-          onShowSettings={() => setExploreShowSettings(true)}
           selectedKey={exploreSelectedKey}
           onKeyChange={setExploreSelectedKey}
           selectedInversions={exploreSelectedInversions}

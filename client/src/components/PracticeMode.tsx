@@ -6,7 +6,6 @@ import Settings from './Settings';
 
 interface PracticeModeProps {
   showSettings: boolean;
-  onShowSettings: () => void;
   selectedKey: string;
   onKeyChange: (key: string) => void;
   selectedInversions: ChordInversion[];
@@ -18,7 +17,6 @@ interface PracticeModeProps {
 
 export default function PracticeMode({
   showSettings,
-  onShowSettings,
   selectedKey,
   onKeyChange,
   selectedInversions,
@@ -33,7 +31,6 @@ export default function PracticeMode({
   const [hasGuessed, setHasGuessed] = useState(false);
   const [currentChords, setCurrentChords] = useState<Record<string, string[]>>({});
   const [currentInversion, setCurrentInversion] = useState<ChordInversion>('root');
-  const [currentResolvedKey, setCurrentResolvedKey] = useState('C'); // Track resolved key for current round
   const [currentDroneKey, setCurrentDroneKey] = useState('C'); // Track current drone key
   const droneSynthRef = useRef<Tone.Synth | null>(null);
 
@@ -142,7 +139,6 @@ export default function PracticeMode({
     
     // Use current drone key if drone is playing, otherwise resolve new key
     const resolvedKey = dronePlaying ? currentDroneKey : (selectedKey === 'Random' ? resolveActualKey(selectedKey) : selectedKey);
-    setCurrentResolvedKey(resolvedKey);
     
     // Generate new chord set with consistent inversion for this round
     const { chords, currentInversion: roundInversion } = getPracticeScaleDegrees(

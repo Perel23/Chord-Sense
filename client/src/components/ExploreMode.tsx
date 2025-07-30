@@ -6,7 +6,6 @@ import Settings from './Settings';
 
 interface ExploreModeProps {
   showSettings: boolean;
-  onShowSettings: () => void;
   selectedKey: string;
   onKeyChange: (key: string) => void;
   selectedInversions: ChordInversion[];
@@ -18,7 +17,6 @@ interface ExploreModeProps {
 
 export default function ExploreMode({
   showSettings,
-  onShowSettings,
   selectedKey,
   onKeyChange,
   selectedInversions,
