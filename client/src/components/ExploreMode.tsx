@@ -1,6 +1,6 @@
 import * as Tone from 'tone';
 import { useRef, useState, useEffect } from 'react';
-import { getRandomInversionChord, ALL_DEGREE_NAMES } from '../constants/chords';
+import { getRandomInversionChord, getDroneNote, resolveActualKey } from '../constants/chords';
 import type { ChordInversion } from '../constants/chords';
 import Settings from './Settings';
 
@@ -28,7 +28,47 @@ export default function ExploreMode({
   onCloseSettings
 }: ExploreModeProps) {
   const [dronePlaying, setDronePlaying] = useState(false);
+  const [currentResolvedKey, setCurrentResolvedKey] = useState('C'); // Track resolved key for current session
+  const [currentDroneKey, setCurrentDroneKey] = useState('C'); // Track current drone key
   const droneSynth = useRef<Tone.Synth | null>(null);
+
+  // Resolve key when selectedKey changes (handles Random) and restart drone if playing
+  useEffect(() => {
+    const resolvedKey = resolveActualKey(selectedKey);
+    setCurrentResolvedKey(resolvedKey);
+    
+    // If drone is playing, restart it with new key
+    if (dronePlaying) {
+      // Stop current drone
+      if (droneSynth.current) {
+        droneSynth.current.triggerRelease();
+        droneSynth.current = null;
+      }
+      
+      // Start new drone with new key
+      const restartDrone = async () => {
+        await Tone.start();
+        const droneKey = selectedKey === 'Random' ? resolveActualKey(selectedKey) : selectedKey;
+        setCurrentDroneKey(droneKey);
+        
+        const synth = new Tone.Synth({
+          oscillator: { type: 'sine' },
+          envelope: {
+            attack: 0.5,
+            decay: 0.1,
+            sustain: 1,
+            release: 0.5
+          },
+          volume: -5
+        }).toDestination();
+        
+        synth.triggerAttack(getDroneNote(droneKey));
+        droneSynth.current = synth;
+      };
+      
+      restartDrone();
+    }
+  }, [selectedKey, dronePlaying]);
   const chordSynth = useRef(new Tone.PolySynth(Tone.Synth, {
     envelope: {
       attack: 0.01,  // Very quick attack, no fade-in
@@ -62,7 +102,10 @@ export default function ExploreMode({
       },
       volume: -5  // More prominent drone (was -10)
     }).toDestination();
-    synth.triggerAttack('C2'); // start drone
+    // Generate new random key each time drone starts (if Random is selected)
+    const droneKey = selectedKey === 'Random' ? resolveActualKey(selectedKey) : selectedKey;
+    setCurrentDroneKey(droneKey);
+    synth.triggerAttack(getDroneNote(droneKey)); // start drone
     droneSynth.current = synth;
     setDronePlaying(true);
   };
@@ -84,7 +127,9 @@ export default function ExploreMode({
     chordSynth.releaseAll();
     
     // Get a chord with random inversion each time (for variety in Explore mode)
-    const chord = getRandomInversionChord(degree, selectedKey, selectedInversions);
+    // Use current drone key if drone is playing, otherwise use session resolved key
+    const chordKey = dronePlaying ? currentDroneKey : currentResolvedKey;
+    const chord = getRandomInversionChord(degree, chordKey, selectedInversions);
     
     if (chord) {
       // Add fade-in and fade-out for more pleasant sound

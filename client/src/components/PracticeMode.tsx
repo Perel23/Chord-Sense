@@ -1,6 +1,6 @@
 import * as Tone from 'tone';
 import { useState, useRef, useEffect } from 'react';
-import { getPracticeScaleDegrees, CHORD_INVERSIONS } from '../constants/chords';
+import { getPracticeScaleDegrees, CHORD_INVERSIONS, getDroneNote, resolveActualKey } from '../constants/chords';
 import type { ChordInversion } from '../constants/chords';
 import Settings from './Settings';
 
@@ -33,8 +33,9 @@ export default function PracticeMode({
   const [hasGuessed, setHasGuessed] = useState(false);
   const [currentChords, setCurrentChords] = useState<Record<string, string[]>>({});
   const [currentInversion, setCurrentInversion] = useState<ChordInversion>('root');
+  const [currentResolvedKey, setCurrentResolvedKey] = useState('C'); // Track resolved key for current round
+  const [currentDroneKey, setCurrentDroneKey] = useState('C'); // Track current drone key
   const droneSynthRef = useRef<Tone.Synth | null>(null);
-  const droneNote = 'C2';
 
   const chordSynth = useRef(new Tone.PolySynth(Tone.Synth, {
     envelope: {
@@ -57,6 +58,55 @@ export default function PracticeMode({
     };
   }, []);
 
+  // Restart drone when key changes (if drone is currently playing)
+  useEffect(() => {
+    if (dronePlaying) {
+      // Stop current drone
+      if (droneSynthRef.current) {
+        droneSynthRef.current.triggerRelease();
+        droneSynthRef.current = null;
+      }
+      
+      // Start new drone with new key
+      const restartDrone = async () => {
+        await Tone.start();
+        const droneKey = selectedKey === 'Random' ? resolveActualKey(selectedKey) : selectedKey;
+        setCurrentDroneKey(droneKey);
+        
+        const droneSynth = new Tone.Synth({
+          oscillator: { type: 'sine' },
+          envelope: { 
+            sustain: 1, 
+            attack: 0.5,
+            release: 0.5
+          },
+          volume: -5,
+        }).toDestination();
+
+        droneSynthRef.current = droneSynth;
+        const droneNote = getDroneNote(droneKey);
+        droneSynth.triggerAttack(droneNote);
+      };
+      
+      restartDrone();
+    }
+  }, [selectedKey]);
+
+  // Update current chords when key changes (if in the middle of a practice round)
+  useEffect(() => {
+    if (correctDegree && Object.keys(currentChords).length > 0) {
+      // We're in the middle of a practice round, need to update chords to new key
+      const chordKey = dronePlaying ? currentDroneKey : (selectedKey === 'Random' ? resolveActualKey(selectedKey) : selectedKey);
+      const { chords, currentInversion: roundInversion } = getPracticeScaleDegrees(
+        chordKey,
+        selectedInversions,
+        enabledDegrees
+      );
+      setCurrentChords(chords);
+      setCurrentInversion(roundInversion);
+    }
+  }, [selectedKey, currentDroneKey]);
+
   const toggleDrone = async () => {
     await Tone.start();
 
@@ -72,6 +122,10 @@ export default function PracticeMode({
       }).toDestination();
 
       droneSynthRef.current = droneSynth;
+      // Generate new random key each time drone starts (if Random is selected)
+      const droneKey = selectedKey === 'Random' ? resolveActualKey(selectedKey) : selectedKey;
+      setCurrentDroneKey(droneKey);
+      const droneNote = getDroneNote(droneKey);
       droneSynth.triggerAttack(droneNote);
       setDronePlaying(true);
     } else {
@@ -86,9 +140,13 @@ export default function PracticeMode({
     // Stop any currently playing notes to prevent overlap
     chordSynth.releaseAll();
     
+    // Use current drone key if drone is playing, otherwise resolve new key
+    const resolvedKey = dronePlaying ? currentDroneKey : (selectedKey === 'Random' ? resolveActualKey(selectedKey) : selectedKey);
+    setCurrentResolvedKey(resolvedKey);
+    
     // Generate new chord set with consistent inversion for this round
     const { chords, currentInversion: roundInversion } = getPracticeScaleDegrees(
-      selectedKey, 
+      resolvedKey, 
       selectedInversions, 
       enabledDegrees
     );

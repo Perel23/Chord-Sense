@@ -21,6 +21,15 @@ export const KEY_OFFSETS: Record<string, number> = {
   'Gb': 6, 'G': 7, 'Ab': 8, 'A': 9, 'Bb': 10, 'B': 11
 };
 
+// Helper function to resolve actual key (handles Random selection)
+export function resolveActualKey(selectedKey: string): string {
+  if (selectedKey === 'Random') {
+    const availableKeys = Object.keys(KEY_OFFSETS);
+    return availableKeys[Math.floor(Math.random() * availableKeys.length)];
+  }
+  return selectedKey;
+}
+
 // Base chord degrees in C major
 export const BASE_SCALE_DEGREES = {
   I: ['C4', 'E4', 'G4'],
@@ -79,6 +88,14 @@ function applyInversion(chord: string[], inversion: ChordInversion): string[] {
   }
 }
 
+// Function to get the drone note for a given key
+export function getDroneNote(selectedKey: string): string {
+  const offset = KEY_OFFSETS[selectedKey] || 0;
+  
+  // Start with C2 and transpose to the selected key
+  return transposeNote('C2', offset);
+}
+
 // Function to get scale degrees for Practice Mode (consistent inversion per round)
 export function getPracticeScaleDegrees(
   selectedKey: string,
@@ -87,12 +104,7 @@ export function getPracticeScaleDegrees(
 ): { chords: Record<string, string[]>, currentInversion: ChordInversion } {
   const result: Record<string, string[]> = {};
   
-  // Handle random key
-  const actualKey = selectedKey === 'Random' 
-    ? Object.keys(KEY_OFFSETS)[Math.floor(Math.random() * Object.keys(KEY_OFFSETS).length)]
-    : selectedKey;
-  
-  const offset = KEY_OFFSETS[actualKey] || 0;
+  const offset = KEY_OFFSETS[selectedKey] || 0;
   
   // Choose ONE random inversion for this entire round
   const currentInversion = selectedInversions[Math.floor(Math.random() * selectedInversions.length)];
@@ -119,12 +131,7 @@ export function getScaleDegrees(
 ): Record<string, string[]> {
   const result: Record<string, string[]> = {};
   
-  // Handle random key
-  const actualKey = selectedKey === 'Random' 
-    ? Object.keys(KEY_OFFSETS)[Math.floor(Math.random() * Object.keys(KEY_OFFSETS).length)]
-    : selectedKey;
-  
-  const offset = KEY_OFFSETS[actualKey] || 0;
+  const offset = KEY_OFFSETS[selectedKey] || 0;
   
   enabledDegrees.forEach(degree => {
     const baseChord = BASE_SCALE_DEGREES[degree as keyof typeof BASE_SCALE_DEGREES];
@@ -150,12 +157,7 @@ export function getRandomInversionChord(
   const baseChord = BASE_SCALE_DEGREES[degree as keyof typeof BASE_SCALE_DEGREES];
   if (!baseChord) return null;
   
-  // Handle random key
-  const actualKey = selectedKey === 'Random' 
-    ? Object.keys(KEY_OFFSETS)[Math.floor(Math.random() * Object.keys(KEY_OFFSETS).length)]
-    : selectedKey;
-  
-  const offset = KEY_OFFSETS[actualKey] || 0;
+  const offset = KEY_OFFSETS[selectedKey] || 0;
   
   // Transpose to the selected key
   const transposedChord = baseChord.map(note => transposeNote(note, offset));
