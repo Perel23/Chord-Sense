@@ -3,7 +3,6 @@ import MainMenu from './components/MainMenu';
 import ExploreMode from './components/ExploreMode';
 import PracticeMode from './components/PracticeMode';
 import Onboarding from './components/Onboarding';
-import { ALL_DEGREE_NAMES } from './constants/chords';
 import type { ChordInversion } from './constants/chords';
 import './styles/globals.css';
 import './styles/components.css';
@@ -51,8 +50,6 @@ function App() {
 
   return (
     <div className="app-container">
-      <div className="app-background"></div>
-      
       {showOnboarding && (
         <Onboarding
           onComplete={handleOnboardingComplete}
@@ -97,13 +94,13 @@ function App() {
               if (mode === 'explore') setExploreShowSettings(true);
             }}
           >
-            ⚙️ SETTINGS
+            ⚙️ Settings
           </button>
           <button 
             className="btn"
             onClick={() => setMode('menu')}
           >
-            ⬅️ BACK TO MENU
+            ⬅️ Back to Menu
           </button>
         </div>
       )}
