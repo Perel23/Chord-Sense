@@ -88,8 +88,8 @@ function applyInversion(chord: string[], inversion: ChordInversion): string[] {
   }
 }
 
-// Function to get the drone note for a given key
-export function getDroneNote(selectedKey: string): string {
+// Function to get the root note for a given key
+export function getRootNote(selectedKey: string): string {
   const offset = KEY_OFFSETS[selectedKey] || 0;
   
   // Start with C2 and transpose to the selected key

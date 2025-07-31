@@ -53,129 +53,116 @@ export default function Settings({
   };
 
   return (
-    <div className="settings-overlay" style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0,0,0,0.5)',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      zIndex: 1000
-    }}>
-      <div className="settings-modal" style={{
-        backgroundColor: 'white',
-        padding: '2rem',
-        borderRadius: '8px',
-        maxWidth: '500px',
-        width: '90%',
-        maxHeight: '80vh',
-        overflow: 'auto'
-      }}>
-        <h3>⚙️ {mode === 'practice' ? 'Practice' : 'Explore'} Mode Settings</h3>
-        
-        {/* Scale/Key Selection */}
-        <div style={{ marginBottom: '1.5rem' }}>
-          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
-            Choose scale:
-          </label>
-          <select 
-            value={selectedKey} 
-            onChange={(e) => onKeyChange(e.target.value)}
-            style={{ padding: '0.5rem', fontSize: '1rem', width: '100%' }}
-          >
-            {SCALES.map(scale => (
-              <option key={scale.key} value={scale.key}>
-                {scale.name}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Chord Selection */}
-        <div style={{ marginBottom: '1.5rem' }}>
-          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
-            Select chords to practice:
-          </label>
-          <div style={{ marginBottom: '0.5rem' }}>
-            <button onClick={selectAllDegrees} style={{ marginRight: '0.5rem', fontSize: '0.8rem' }}>
-              Select All
-            </button>
-            <button onClick={selectCommonProgression} style={{ fontSize: '0.8rem' }}>
-              I-IV-V Only
-            </button>
-          </div>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem' }}>
-            {ALL_DEGREE_NAMES.map(degree => (
-              <label key={degree} style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
-                <input
-                  type="checkbox"
-                  checked={enabledDegrees.includes(degree)}
-                  onChange={() => handleDegreeToggle(degree)}
-                  style={{ marginRight: '0.5rem' }}
-                />
-                {degree}
-              </label>
-            ))}
-          </div>
-        </div>
-
-        {/* Chord Inversions */}
-        <div style={{ marginBottom: '1.5rem' }}>
-          <label style={{ display: 'block', marginBottom: '0.5rem', fontWeight: 'bold' }}>
-            Chord inversions:
-          </label>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            {Object.entries(CHORD_INVERSIONS).map(([key, label]) => (
-              <label key={key} style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
-                <input
-                  type="checkbox"
-                  checked={selectedInversions.includes(key as ChordInversion)}
-                  onChange={() => handleInversionToggle(key as ChordInversion)}
-                  style={{ marginRight: '0.5rem' }}
-                />
-                {label}
-              </label>
-            ))}
-          </div>
-          
-          {/* Informational message for multiple inversions */}
-          {selectedInversions.length >= 2 && (
-            <div style={{
-              marginTop: '0.75rem',
-              padding: '0.75rem',
-              backgroundColor: mode === 'explore' ? '#e7f3ff' : '#f0f8e7',
-              border: `1px solid ${mode === 'explore' ? '#b3d9ff' : '#c3e6c3'}`,
-              borderRadius: '4px',
-              fontSize: '0.9rem',
-              color: mode === 'explore' ? '#0066cc' : '#2d5f2d'
-            }}>
-              <strong>ℹ️ {mode === 'practice' ? 'Practice' : 'Explore'} Mode:</strong>{' '}
-              {mode === 'explore' 
-                ? 'When multiple inversions are selected, a random inversion will be chosen each time you play a chord.'
-                : 'When multiple inversions are selected, one inversion will be chosen for each round. All chords in that round (target and your guesses) will use the same inversion for fair comparison.'
-              }
-            </div>
-          )}
-        </div>
-
-        {/* Close Button */}
-        <div style={{ textAlign: 'center' }}>
+    <div className="settings-panel">
+      <div className="settings-content">
+        <div className="settings-header">
+          <h2 className="text-gradient">Settings</h2>
           <button 
+            className="btn"
             onClick={onClose}
-            style={{ 
-              padding: '0.75rem 2rem', 
-              fontSize: '1rem',
-              backgroundColor: '#007bff',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer'
-            }}
           >
-            Apply Settings
+            ✕
+          </button>
+        </div>
+        
+        <div className="settings-section">
+          <h3>🎼 Scale Selection</h3>
+          <div className="form-group">
+            <label className="form-label">
+              Choose scale:
+              <span className="form-help" title="The scale determines which chords you'll practice. Start with C Major (no sharps or flats) for the easiest experience.">ℹ️</span>
+            </label>
+            <select 
+              className="form-select"
+              value={selectedKey} 
+              onChange={(e) => onKeyChange(e.target.value)}
+            >
+              {SCALES.map(scale => (
+                <option key={scale.key} value={scale.key}>
+                  {scale.name}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        
+        <div className="settings-section">
+          <h3>🎵 Chord Selection</h3>
+          <div className="form-group">
+            <label className="form-label">
+              Select chords to practice:
+              <span className="form-help" title="Roman numerals (I, ii, iii, etc.) are the standard way musicians identify chords. Start with I, IV, V - the most common chords in music!">ℹ️</span>
+            </label>
+            <div style={{ marginBottom: 'var(--spacing-md)', display: 'flex', gap: 'var(--spacing-sm)' }}>
+              <button 
+                className="btn"
+                onClick={selectAllDegrees}
+              >
+                Select All
+              </button>
+              <button 
+                className="btn"
+                onClick={selectCommonProgression}
+              >
+                I-IV-V Only
+              </button>
+            </div>
+            <div className="checkbox-group">
+              {ALL_DEGREE_NAMES.map(degree => (
+                <label key={degree} className="checkbox-item">
+                  <input
+                    type="checkbox"
+                    checked={enabledDegrees.includes(degree)}
+                    onChange={() => handleDegreeToggle(degree)}
+                  />
+                  <span>{degree}</span>
+                </label>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        
+        <div className="settings-section">
+          <h3>🔄 Chord Variations</h3>
+          <div className="form-group">
+            <label className="form-label">
+              Chord inversions:
+              <span className="form-help" title="Inversions change which note is played lowest in the chord. Start with 'Root Position' only for the simplest experience.">ℹ️</span>
+            </label>
+            <div className="checkbox-group">
+              {Object.entries(CHORD_INVERSIONS).map(([key, label]) => (
+                <label key={key} className="checkbox-item">
+                  <input
+                    type="checkbox"
+                    checked={selectedInversions.includes(key as ChordInversion)}
+                    onChange={() => handleInversionToggle(key as ChordInversion)}
+                  />
+                  <span>{label}</span>
+                </label>
+              ))}
+            </div>
+            
+            {/* Informational message for multiple inversions */}
+            {selectedInversions.length >= 2 && (
+              <div className="settings-info-panel">
+                <strong>ℹ️ {mode === 'practice' ? 'Practice' : 'Explore'} Mode:</strong>{' '}
+                {mode === 'explore' 
+                  ? 'When multiple inversions are selected, a random inversion will be chosen each time you play a chord.'
+                  : 'When multiple inversions are selected, one inversion will be chosen for each round. All chords in that round (target and your guesses) will use the same inversion for fair comparison.'
+                }
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div style={{ textAlign: 'center', marginTop: 'var(--spacing-lg)' }}>
+          <button 
+            className="btn btn-primary btn-large"
+            onClick={onClose}
+          >
+            ✓ Apply Settings
           </button>
         </div>
       </div>

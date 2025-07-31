@@ -1,6 +1,6 @@
 import * as Tone from 'tone';
 import { useRef, useState, useEffect } from 'react';
-import { getRandomInversionChord, getDroneNote, resolveActualKey } from '../constants/chords';
+import { getRandomInversionChord, getRootNote, resolveActualKey } from '../constants/chords';
 import type { ChordInversion } from '../constants/chords';
 import Settings from './Settings';
 
@@ -60,7 +60,7 @@ export default function ExploreMode({
           volume: -5
         }).toDestination();
         
-        synth.triggerAttack(getDroneNote(droneKey));
+        synth.triggerAttack(getRootNote(droneKey));
         droneSynth.current = synth;
       };
       
@@ -103,7 +103,7 @@ export default function ExploreMode({
     // Generate new random key each time drone starts (if Random is selected)
     const droneKey = selectedKey === 'Random' ? resolveActualKey(selectedKey) : selectedKey;
     setCurrentDroneKey(droneKey);
-    synth.triggerAttack(getDroneNote(droneKey)); // start drone
+    synth.triggerAttack(getRootNote(droneKey)); // start drone
     droneSynth.current = synth;
     setDronePlaying(true);
   };
@@ -136,16 +136,37 @@ export default function ExploreMode({
   };
 
   return (
-    <div className="p-4">
-      <h2>🔍 Explore Mode</h2>
-      <button onClick={toggleDrone}>
-        {dronePlaying ? 'Stop Drone' : 'Start Drone'}
-      </button>
+    <div className="mode-container">
+      <div className="mode-header">
+        <div className="mode-title">
+          <span className="mode-icon">🔍</span>
+          <h2 className="text-gradient">Explore Mode</h2>
+        </div>
+        <p className="text-muted">Freely explore chord progressions and scales</p>
+      </div>
 
-      <div className="mt-4">
+      <div className="control-panel">
+        <div className="drone-controls">
+          <button 
+            className={`btn btn-circle drone-button ${dronePlaying ? 'active' : ''}`}
+            onClick={toggleDrone}
+          >
+            {dronePlaying ? '⏸️' : '🎵'}
+          </button>
+          <span className="text-secondary">
+            {dronePlaying ? 'Root Note Playing' : 'Start Root Note'}
+          </span>
+        </div>
+      </div>
+
+      <div className="chord-grid">
         {enabledDegrees.map((deg) => (
-          <button key={deg} onClick={() => playChord(deg)} style={{ margin: '4px' }}>
-            Play {deg}
+          <button 
+            key={deg} 
+            className="btn chord-button"
+            onClick={() => playChord(deg)}
+          >
+            {deg}
           </button>
         ))}
       </div>

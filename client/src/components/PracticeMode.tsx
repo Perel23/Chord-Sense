@@ -1,6 +1,6 @@
 import * as Tone from 'tone';
 import { useState, useRef, useEffect } from 'react';
-import { getPracticeScaleDegrees, CHORD_INVERSIONS, getDroneNote, resolveActualKey } from '../constants/chords';
+import { getPracticeScaleDegrees, CHORD_INVERSIONS, getRootNote, resolveActualKey } from '../constants/chords';
 import type { ChordInversion } from '../constants/chords';
 import Settings from './Settings';
 
@@ -81,7 +81,7 @@ export default function PracticeMode({
         }).toDestination();
 
         droneSynthRef.current = droneSynth;
-        const droneNote = getDroneNote(droneKey);
+        const droneNote = getRootNote(droneKey);
         droneSynth.triggerAttack(droneNote);
       };
       
@@ -122,7 +122,7 @@ export default function PracticeMode({
       // Generate new random key each time drone starts (if Random is selected)
       const droneKey = selectedKey === 'Random' ? resolveActualKey(selectedKey) : selectedKey;
       setCurrentDroneKey(droneKey);
-      const droneNote = getDroneNote(droneKey);
+      const droneNote = getRootNote(droneKey);
       droneSynth.triggerAttack(droneNote);
       setDronePlaying(true);
     } else {
@@ -207,37 +207,69 @@ export default function PracticeMode({
   };
 
   return (
-    <div className="p-4">
-      <h2>🎵 Chord Sense – Ear Trainer</h2>
-      <button onClick={toggleDrone}>
-        {dronePlaying ? 'Stop Drone' : 'Play Drone'}
-      </button>
-      <button onClick={playChord} style={{ marginLeft: '1rem' }}>
-        Next Chord
-      </button>
+    <div className="mode-container">
+      <div className="mode-header">
+        <div className="mode-title">
+          <span className="mode-icon">🎯</span>
+          <h2 className="text-gradient">Practice Mode</h2>
+        </div>
+        <p className="text-muted">Identify the chord and get instant feedback</p>
+      </div>
 
-      <div className="mt-4">
+      <div className="control-panel">
+        <div className="drone-controls">
+          <button 
+            className={`btn btn-circle drone-button ${dronePlaying ? 'active' : ''}`}
+            onClick={toggleDrone}
+          >
+            {dronePlaying ? '⏸️' : '🎵'}
+          </button>
+          <span className="text-secondary">
+            {dronePlaying ? 'Root Note Playing' : 'Start Root Note'}
+          </span>
+        </div>
+
+        <button 
+          className="btn btn-primary btn-large"
+          onClick={playChord}
+        >
+          🎲 Play Mystery Chord
+        </button>
+      </div>
+
+      {message && (
+        <div className={`practice-feedback ${message.includes('✅') ? 'correct' : 'incorrect'}`}>
+          {message}
+        </div>
+      )}
+
+      <div className="chord-grid">
         {enabledDegrees.map((deg) => (
-          <button key={deg} onClick={() => handleGuess(deg)} style={{ margin: '4px' }}>
+          <button 
+            key={deg} 
+            className="btn chord-button"
+            onClick={() => handleGuess(deg)}
+          >
             {deg}
           </button>
         ))}
       </div>
-      
-      {/* Reserve space for inversion display - shows after user answers if multiple inversions selected */}
-      <div style={{ marginTop: '0.75rem', fontSize: '0.9rem', color: '#666', textAlign: 'center', minHeight: '1.2rem' }}>
-        {correctDegree && selectedInversions.length > 1 && hasGuessed && (
-          <>Current inversion: <strong>{CHORD_INVERSIONS[currentInversion]}</strong></>
-        )}
-      </div>
-      
-      {/* Reserve space for feedback message */}
-      <div style={{ marginTop: '1rem', minHeight: '1.5rem' }}>{message}</div>
-      
+
+      {/* Inversion display */}
+      {correctDegree && selectedInversions.length > 1 && hasGuessed && (
+        <div className="inversion-display">
+          Current inversion: <strong>{CHORD_INVERSIONS[currentInversion]}</strong>
+        </div>
+      )}
+
+      {/* Repeat chord option */}
       {correctDegree && (
-        <div style={{ marginTop: '1rem' }}>
-          <button onClick={repeatChord}>
-            Repeat Chord
+        <div style={{ marginTop: 'var(--spacing-md)', textAlign: 'center' }}>
+          <button 
+            className="btn"
+            onClick={repeatChord}
+          >
+            🔄 Repeat Chord
           </button>
         </div>
       )}
